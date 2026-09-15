@@ -96,10 +96,10 @@
   .field-row{display:flex; align-items:center; gap:13px; background:#fff; padding:12px 14px; border-bottom:1px solid var(--line);}
   .field-ico{width:34px; height:34px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:15px; color:#fff;}
   .field-row .fcol{flex:1; min-width:0;}
-  .field-row label{display:block; font-size:10.5px; color:var(--muted); font-weight:600; letter-spacing:.2px; margin-bottom:1px;}
-  .field-row input, .field-row textarea{width:100%; border:none; background:transparent; font-size:14.5px; color:var(--text); font-family:'Inter'; padding:0;}
+  .field-row label{display:block; font-size:11.5px; color:var(--muted); font-weight:600; letter-spacing:.2px; margin-bottom:2px;}
+  .field-row input, .field-row textarea{width:100%; border:none; background:transparent; font-size:16px; color:var(--text); font-family:'Inter'; padding:0;}
   .field-row input:focus, .field-row textarea:focus{outline:none;}
-  .field-row textarea{resize:vertical; min-height:44px;}
+  .field-row textarea{resize:none; min-height:100px; overflow:hidden;}
   .field-row.selectlike{cursor:pointer;}
   .field-row .placeholder-txt{color:#9fb0b8;}
   .plus-btn{width:26px; height:26px; border-radius:50%; border:1.5px solid var(--muted); color:var(--muted); display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:700; flex-shrink:0; cursor:pointer; margin-left:6px;}
@@ -113,7 +113,7 @@
   .detail-title{padding:4px 16px 12px; text-align:center;}
   .detail-title h2{margin:0 0 8px; font-size:20px;}
   .detail-list{background:#fff;}
-  .drow{display:flex; align-items:center; gap:13px; padding:12px 16px; border-bottom:1px solid var(--line); font-size:14px;}
+  .drow{display:flex; align-items:center; gap:13px; padding:12px 16px; border-bottom:1px solid var(--line); font-size:15.5px;}
   .drow .field-ico{width:30px; height:30px; font-size:13px;}
   .drow .k{color:var(--muted); width:118px; flex-shrink:0;}
   .drow .v{font-weight:600; flex:1; display:flex; align-items:center; gap:6px;}
@@ -133,7 +133,7 @@
   .chart-box{position:relative; height:190px;}
   .chart-legend{display:flex; flex-wrap:wrap; gap:6px 14px; margin-top:10px; padding-left:2px;}
   .chart-legend .li{display:flex; align-items:center; gap:6px; font-size:11.5px; color:var(--text); cursor:pointer;}
-  .chart-legend .sw{width:10px; height:10px; border-radius:2px; flex-shrink:0;}
+  .chart-legend .sw{width:11px; height:11px; border-radius:50%; flex-shrink:0; box-shadow:0 1px 2px rgba(0,0,0,.15);}
   .stats-empty{text-align:center; padding:70px 20px; color:var(--muted);}
 
   .sort-row{display:flex; align-items:center; gap:8px; background:#fff; padding:10px 16px; border-bottom:1px solid var(--line);}
@@ -161,6 +161,9 @@
   .ach-title{font-size:11px; font-weight:700; line-height:1.22;}
   .ach-pts{font-size:10px; color:var(--muted); margin-top:2px;}
 
+  .picker-panel{position:fixed; inset:0; background:var(--bg); z-index:210; display:flex; flex-direction:column;}
+  .picker-panel .panel-head{flex-shrink:0;}
+  .picker-list-wrap{flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch;}
   .modal-search{position:sticky; top:0; background:var(--navy-dark); padding:10px 12px; z-index:2;}
   .modal-search input{width:100%; background:rgba(255,255,255,.12); border:none; border-radius:9px; color:#fff; padding:9px 12px; font-size:14px;}
   .modal-search input::placeholder{color:rgba(255,255,255,.6);}
@@ -263,7 +266,7 @@
       <div class="plus-btn" data-picker="brewery">+</div>
     </div>
     <div class="field-row">
-      <div class="field-ico" style="background:#3cb8a3;">🥤</div>
+      <div class="field-ico" style="background:#3cb8a3;">🏷️</div>
       <div class="fcol"><label>Estilo</label><input type="text" id="fStyle" placeholder="Ex: IPA, Weiss, Stout…"></div>
       <div class="plus-btn" data-picker="style">+</div>
     </div>
@@ -400,7 +403,7 @@
   function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 2600); }
   function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
   function formatDate(d){ if(!d) return ''; const [y,m,day]=d.split('-'); return `${day}/${m}/${y}`; }
-  const PALETTE = ['#e0624c','#4a90d2','#e0a83e','#3cb8a3','#d9762e','#d9527a','#6fae3e','#8e6fc9'];
+  const PALETTE = ['#e0624c','#4a90d2','#e0a83e','#3cb8a3','#8e6fc9','#d9527a','#6fae3e','#4fb8d4','#c9822e','#b25ad9'];
   function colorFor(str){ if(!str) return PALETTE[0]; let h=0; for(let i=0;i<str.length;i++) h=(h*31+str.charCodeAt(i))>>>0; return PALETTE[h%PALETTE.length]; }
   function flagEmoji(iso2){ if(!iso2) return '🏳️'; return iso2.toUpperCase().split('').map(c=>String.fromCodePoint(127397+c.charCodeAt(0))).join(''); }
 
@@ -604,7 +607,7 @@
   const PICKER_CONFIG = {
     place: {field:'place', label:'local de fabricação', icon:'📌'},
     brewery: {field:'brewery', label:'cervejaria', icon:'🏭'},
-    style: {field:'style', label:'estilo', icon:'🥤'},
+    style: {field:'style', label:'estilo', icon:'🏷️'},
     bottleSize: {field:'bottleSize', label:'tamanho da garrafa', icon:'🍾', numeric:true, presets:BOTTLE_PRESETS, unit:' ml'}
   };
   function openHistoryPicker(kind){
@@ -624,15 +627,12 @@
     if(cfg.numeric) allVals.sort((a,b)=>a-b); else allVals.sort((a,b)=>String(a).localeCompare(String(b),'pt-BR'));
 
     const overlay = document.createElement('div');
-    overlay.className = 'overlay open';
+    overlay.className = 'picker-panel';
     const fmt = v => cfg.numeric ? (v+(cfg.unit||'')) : escapeHtml(v);
-    overlay.innerHTML = `<div class="sheet" style="max-height:80vh;">
-      <div class="sheet-handle"></div>
-      <h2>Selecionar ${cfg.label}</h2>
-      <input type="text" id="pickerSearch" placeholder="Buscar ou digite algo novo…" style="width:100%; padding:10px 12px; border-radius:9px; border:1px solid var(--line); font-size:14px; margin-bottom:12px; box-sizing:border-box;">
-      <div id="pickerList" style="max-height:50vh; overflow-y:auto;"></div>
-      <button class="btn btn-ghost" id="pickerClose" style="margin-top:10px;">Fechar</button>
-    </div>`;
+    overlay.innerHTML = `
+      <div class="panel-head"><button class="pbtn" id="pickerClose">←</button><h2>Selecionar ${cfg.label}</h2><div style="width:38px;"></div></div>
+      <div class="modal-search"><input type="text" id="pickerSearch" placeholder="Buscar ou digite algo novo…"></div>
+      <div id="pickerList" class="picker-list-wrap"></div>`;
     document.body.appendChild(overlay);
     const listEl = overlay.querySelector('#pickerList');
     const searchEl = overlay.querySelector('#pickerSearch');
@@ -641,12 +641,12 @@
       const q = (filter||'').trim().toLowerCase();
       let html = '';
       if(!q && recent.length){
-        html += `<div style="font-size:10.5px; color:var(--muted); font-weight:800; text-transform:uppercase; padding:4px 2px;">Recentes</div>`;
+        html += `<div style="font-size:10.5px; color:var(--muted); font-weight:800; text-transform:uppercase; padding:10px 16px 4px;">Recentes</div>`;
         html += recent.map(v=>`<div class="country-row" data-v="${escapeHtml(String(v))}">🕐 ${fmt(v)}</div>`).join('');
-        html += `<div style="font-size:10.5px; color:var(--muted); font-weight:800; text-transform:uppercase; padding:10px 2px 4px;">Todos</div>`;
+        html += `<div style="font-size:10.5px; color:var(--muted); font-weight:800; text-transform:uppercase; padding:12px 16px 4px;">Todos</div>`;
       }
       const filtered = q ? allVals.filter(v=>String(v).toLowerCase().includes(q)) : allVals;
-      html += filtered.length ? filtered.map(v=>`<div class="country-row" data-v="${escapeHtml(String(v))}">${cfg.icon} ${fmt(v)}</div>`).join('') : `<div style="padding:20px; text-align:center; color:var(--muted); font-size:12.5px;">Nada encontrado — toque em "Fechar" e digite direto no campo.</div>`;
+      html += filtered.length ? filtered.map(v=>`<div class="country-row" data-v="${escapeHtml(String(v))}">${cfg.icon} ${fmt(v)}</div>`).join('') : `<div style="padding:30px; text-align:center; color:var(--muted); font-size:12.5px;">Nada encontrado — toque em "←" e digite direto no campo.</div>`;
       listEl.innerHTML = html;
       listEl.querySelectorAll('.country-row').forEach(row=>{
         row.addEventListener('click', ()=>{
@@ -658,7 +658,6 @@
     renderList('');
     searchEl.addEventListener('input', ()=>renderList(searchEl.value));
     overlay.querySelector('#pickerClose').addEventListener('click', ()=>document.body.removeChild(overlay));
-    overlay.addEventListener('click', e=>{ if(e.target===overlay) document.body.removeChild(overlay); });
   }
   document.querySelectorAll('.plus-btn[data-picker]').forEach(btn=>{
     btn.addEventListener('click', ()=>openHistoryPicker(btn.dataset.picker));
@@ -775,6 +774,12 @@
 
   // ---- form panel ----
   const formPanel = document.getElementById('formPanel');
+  function autoGrowTextarea(el){
+    el.style.height = 'auto';
+    el.style.height = (el.scrollHeight + 2) + 'px';
+  }
+  document.getElementById('fNotes').addEventListener('input', function(){ autoGrowTextarea(this); });
+
   function setPhotoSlot(n, dataUrl){
     const img=document.getElementById('photoImg'+n), box=document.getElementById('photoBox'+n);
     if(dataUrl){ img.src=dataUrl; img.style.display='block'; box.querySelector('.plus').style.display='none'; box.classList.add('has-photo'); }
@@ -802,11 +807,13 @@
     if(!fCurrency.dataset.filled){ fCurrency.innerHTML = CURRENCIES.map(c=>`<option value="${c.code}">${c.code} (${c.symbol})</option>`).join(''); fCurrency.dataset.filled='1'; }
     fCurrency.value = beer ? (beer.currency||'BRL') : 'BRL';
     document.getElementById('fNotes').value = beer ? beer.notes||'' : '';
+    autoGrowTextarea(document.getElementById('fNotes'));
     selectedCountry = beer ? beer.location||'' : '';
     document.getElementById('countryDisplay').textContent = selectedCountry ? (flagEmoji(countryCode(selectedCountry))+' '+selectedCountry) : 'Selecionar país';
     document.getElementById('countryDisplay').classList.toggle('placeholder-txt', !selectedCountry);
     currentColor = beer ? beer.color||null : null;
     applyColorDisplay();
+    formPanel.scrollTop = 0;
     photo1 = beer ? beer.photo||null : null; photo2 = beer ? beer.photo2||null : null;
     currentRating = beer ? beer.rating||0 : 0;
     setPhotoSlot(1,photo1); setPhotoSlot(2,photo2);
@@ -862,7 +869,7 @@
       <div class="detail-title"><h2>${escapeHtml(b.name)}</h2>${starsRow(b.rating,30)}</div>
       <div class="detail-list">
         <div class="drow"><div class="field-ico" style="background:#e0a83e;">🏭</div><div class="k">Cervejaria</div><div class="v">${escapeHtml(b.brewery||'—')}</div></div>
-        <div class="drow"><div class="field-ico" style="background:#3cb8a3;">🥤</div><div class="k">Estilo</div><div class="v">${escapeHtml(b.style||'—')}</div></div>
+        <div class="drow"><div class="field-ico" style="background:#3cb8a3;">🏷️</div><div class="k">Estilo</div><div class="v">${escapeHtml(b.style||'—')}</div></div>
         <div class="drow"><div class="field-ico" style="background:#d9762e;">🌍</div><div class="k">País</div><div class="v">${b.location?flagEmoji(countryCode(b.location))+' '+escapeHtml(b.location):'—'}</div></div>
         <div class="drow"><div class="field-ico" style="background:#8e6fc9;">📌</div><div class="k">Local (fabricação)</div><div class="v">${escapeHtml(b.place||'—')}</div></div>
         <div class="drow"><div class="field-ico" style="background:#c0554f;">%</div><div class="k">Teor alcoólico</div><div class="v">${b.abv?b.abv+'%':'—'}</div></div>
@@ -902,6 +909,7 @@
       await saveBeers(); detailPanel.classList.remove('open'); render();
       toast('Cerveja excluída.');
     });
+    detailPanel.scrollTop = 0;
     detailContent.querySelectorAll('.detail-photos img').forEach(imgEl=>{
       imgEl.addEventListener('click', ()=>openLightbox(imgEl.src));
     });
@@ -911,6 +919,12 @@
   document.getElementById('btnDetailEdit').addEventListener('click', ()=>{ const b=beers.find(x=>x.id===detailId); detailPanel.classList.remove('open'); openForm(b); });
 
   // ---- SVG chart builders (offline, clickable segments for drill-down) ----
+  function lightenHex(hex, amt){
+    const r = Math.min(255, parseInt(hex.slice(1,3),16)+amt);
+    const g = Math.min(255, parseInt(hex.slice(3,5),16)+amt);
+    const b = Math.min(255, parseInt(hex.slice(5,7),16)+amt);
+    return '#'+[r,g,b].map(v=>Math.round(v).toString(16).padStart(2,'0')).join('');
+  }
   function svgVBarChart(data){
     const W=300,H=180,padBottom=14,padTop=18,padLeft=26,padRight=8;
     const chartW=W-padLeft-padRight, chartH=H-padTop-padBottom;
@@ -929,15 +943,21 @@
         <text x="${padLeft-5}" y="${(y+3).toFixed(1)}" font-size="8" fill="#90a4ae" text-anchor="end">${val}</text>`;
     }
     const gap=chartW/data.length; const barW=Math.min(gap*0.58,42);
-    let bars='';
+    let bars='', defs='';
     data.forEach((d,i)=>{
       const barH=(d.value/axisMax)*chartH; const x=padLeft+gap*i+(gap-barW)/2, y=padTop+(chartH-barH);
+      const gid = 'bg'+Math.random().toString(36).slice(2,8)+i;
+      defs += `<linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="${lightenHex(d.color,28)}"/>
+        <stop offset="100%" stop-color="${d.color}"/>
+      </linearGradient>`;
       bars += `<g data-key="${escapeHtml(d.label)}" style="cursor:pointer;">
-        <rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${Math.max(barH,2).toFixed(1)}" rx="5" fill="${d.color}"/>
+        <rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${Math.max(barH,2).toFixed(1)}" rx="6" fill="url(#${gid})"/>
         <rect x="${x.toFixed(1)}" y="${padTop}" width="${barW.toFixed(1)}" height="${chartH}" fill="transparent"/>
         <text x="${(x+barW/2).toFixed(1)}" y="${(y-6).toFixed(1)}" font-size="10.5" font-weight="700" fill="#263238" text-anchor="middle">${d.value}</text>
       </g>`;
     });
+    bars = `<defs>${defs}</defs>` + bars;
     return `<svg viewBox="0 0 ${W} ${H}" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">${grid}<line x1="${padLeft}" y1="${padTop}" x2="${padLeft}" y2="${(padTop+chartH).toFixed(1)}" stroke="#c7d0d6" stroke-width="1"/>${bars}</svg>`;
   }
   function svgHBarChart(data){
@@ -1008,6 +1028,7 @@
     document.getElementById('drillList').querySelectorAll('.drill-row').forEach(row=>{
       row.addEventListener('click', ()=>{ drillPanel.classList.remove('open'); openDetail(row.dataset.id); });
     });
+    drillPanel.scrollTop = 0;
     drillPanel.classList.add('open');
   }
   document.getElementById('btnDrillBack').addEventListener('click', ()=>{
@@ -1074,7 +1095,7 @@
   const CORE_DIMENSIONS = [
     {key:'location', label:'Países', icon:'🌍', color:'#4a90d2', get:b=>b.location, sort:'alpha', flag:true},
     {key:'brewery', label:'Cervejarias', icon:'🏭', color:'#e0a83e', get:b=>b.brewery, sort:'alpha'},
-    {key:'style', label:'Estilos', icon:'🥤', color:'#3cb8a3', get:b=>b.style, sort:'alpha'},
+    {key:'style', label:'Estilos', icon:'🏷️', color:'#3cb8a3', get:b=>b.style, sort:'alpha'},
     {key:'place', label:'Locais de fabricação', icon:'📌', color:'#8e6fc9', get:b=>b.place, sort:'alpha'},
     {key:'rating', label:'Notas', icon:'⭐', color:'#f5b942', get:b=>b.rating>0?b.rating.toFixed(1):null, sort:'fixed', order:RATING_ORDER},
     {key:'abv', label:'Teor alcoólico (ABV)', icon:'%', color:'#c0554f', get:b=>bucketAbv(b.abv), sort:'fixed', order:ABV_ORDER},
@@ -1092,8 +1113,8 @@
       return `<div class="stat-sec" data-dim="${dim.key}">${head}<div style="text-align:center; color:var(--muted); font-size:12.5px; padding:6px 0 4px;">Nada registrado ainda.</div></div>`;
     }
     const top = keys.map(k=>groups[k]).sort((a,b)=>b.count-a.count).slice(0,5);
-    const chartData = top.map(g=>({label:g.key, value:g.count, color:colorFor(dim.key+'|'+g.key)}));
-    const legend = top.map(g=>`<div class="li" data-key="${escapeHtml(g.key)}"><span class="sw" style="background:${colorFor(dim.key+'|'+g.key)};"></span>${dim.flag?flagEmoji(countryCode(g.key))+' ':''}${escapeHtml(g.key)}</div>`).join('');
+    const chartData = top.map((g,i)=>({label:g.key, value:g.count, color:PALETTE[i%PALETTE.length]}));
+    const legend = top.map((g,i)=>`<div class="li" data-key="${escapeHtml(g.key)}"><span class="sw" style="background:${PALETTE[i%PALETTE.length]};"></span>${dim.flag?flagEmoji(countryCode(g.key))+' ':''}${escapeHtml(g.key)}</div>`).join('');
     return `<div class="stat-sec" data-dim="${dim.key}">${head}
       <div class="chart-box">${svgVBarChart(chartData)}</div>
       <div class="chart-legend">${legend}</div>
@@ -1154,6 +1175,7 @@
         }
       });
     }
+    statsPanel.scrollTop = 0;
     statsPanel.classList.add('open');
   }
 
@@ -1174,6 +1196,7 @@
     sortSel.value = categorySortState[dimKey].by;
     updateSortDirBtn(dimKey);
     renderCategoryRows(dimKey);
+    categoryPanel.scrollTop = 0;
     categoryPanel.classList.add('open');
   }
 
@@ -1251,51 +1274,51 @@
     const continentsVisited = new Set(beers.map(b=>continentOf(countryCode(b.location))).filter(Boolean));
 
     const achievements = [
-      {icon:'🍺', title:'Primeira cerveja', pts:1, unlocked: count>=1},
-      {icon:'📅', title:'1 mês de diário', pts:10, unlocked: daysActive>=30},
-      {icon:'🍻', title:'10 cervejas', pts:10, unlocked: count>=10},
-      {icon:'🌍', title:'10 países', pts:20, unlocked: distinctCountries>=10},
-      {icon:'🥤', title:'5 estilos', pts:20, unlocked: distinctStyles>=5},
-      {icon:'🏭', title:'10 cervejarias', pts:30, unlocked: distinctBreweries>=10},
-      {icon:'📅', title:'3 meses de diário', pts:30, unlocked: daysActive>=90},
-      {icon:'🥤', title:'10 estilos', pts:40, unlocked: distinctStyles>=10},
-      {icon:'🌍', title:'20 países', pts:40, unlocked: distinctCountries>=20},
-      {icon:'🍻', title:'50 cervejas', pts:50, unlocked: count>=50},
-      {icon:'🌍', title:'África', pts:50, unlocked: continentsVisited.has('África')},
-      {icon:'🌏', title:'Ásia', pts:50, unlocked: continentsVisited.has('Ásia')},
-      {icon:'🌏', title:'Austrália', pts:50, unlocked: continentsVisited.has('Austrália')},
-      {icon:'🌍', title:'Europa', pts:50, unlocked: continentsVisited.has('Europa')},
-      {icon:'🌎', title:'América do Norte', pts:50, unlocked: continentsVisited.has('América do Norte')},
-      {icon:'🌎', title:'América do Sul', pts:50, unlocked: continentsVisited.has('América do Sul')},
-      {icon:'⭐', title:'A melhor cerveja', pts:50, unlocked: hasFive},
-      {icon:'💔', title:'A pior cerveja', pts:50, unlocked: hasLow},
-      {icon:'🏭', title:'20 cervejarias', pts:60, unlocked: distinctBreweries>=20},
-      {icon:'📅', title:'6 meses de diário', pts:60, unlocked: daysActive>=180},
-      {icon:'🥤', title:'20 estilos', pts:80, unlocked: distinctStyles>=20},
-      {icon:'💯', title:'100 cervejas', pts:100, unlocked: count>=100},
-      {icon:'🌍', title:'50 países', pts:100, unlocked: distinctCountries>=50},
-      {icon:'📅', title:'12 meses de diário', pts:120, unlocked: daysActive>=365},
-      {icon:'🥤', title:'30 estilos', pts:120, unlocked: distinctStyles>=30},
-      {icon:'🏭', title:'50 cervejarias', pts:150, unlocked: distinctBreweries>=50},
-      {icon:'🥤', title:'40 estilos', pts:160, unlocked: distinctStyles>=40},
-      {icon:'📅', title:'18 meses de diário', pts:180, unlocked: daysActive>=545},
-      {icon:'🌍', title:'100 países', pts:200, unlocked: distinctCountries>=100},
-      {icon:'🍻', title:'200 cervejas', pts:200, unlocked: count>=200},
-      {icon:'🥤', title:'50 estilos', pts:200, unlocked: distinctStyles>=50},
-      {icon:'📅', title:'24 meses de diário', pts:240, unlocked: daysActive>=730},
-      {icon:'🏭', title:'100 cervejarias', pts:300, unlocked: distinctBreweries>=100},
-      {icon:'🌍', title:'150 países', pts:300, unlocked: distinctCountries>=150},
-      {icon:'🥤', title:'75 estilos', pts:300, unlocked: distinctStyles>=75},
-      {icon:'🌐', title:'O Mundo (todos os continentes)', pts:300, unlocked: continentsVisited.size>=6},
-      {icon:'🥤', title:'100 estilos', pts:400, unlocked: distinctStyles>=100},
-      {icon:'🏭', title:'150 cervejarias', pts:450, unlocked: distinctBreweries>=150},
-      {icon:'🍻', title:'500 cervejas', pts:500, unlocked: count>=500},
-      {icon:'🍻', title:'1000 cervejas', pts:1000, unlocked: count>=1000},
-      {icon:'📍', title:'Bônus: 5 locais de fabricação diferentes', pts:20, unlocked: distinctPlaces>=5},
-      {icon:'🌶️', title:'Bônus: IPA turbinada (IBU 60+)', pts:20, unlocked: hasHoppy},
-      {icon:'🌑', title:'Bônus: cerveja bem escura', pts:20, unlocked: hasDark},
-      {icon:'☀️', title:'Bônus: cerveja bem clara', pts:20, unlocked: hasPale},
-      {icon:'🍾', title:'Bônus: garrafa grande (750ml+)', pts:15, unlocked: hasBigBottle},
+      {icon:'🍺', title:'Primeira cerveja', pts:1, c:['#ffc670','#dd8a28'], unlocked: count>=1},
+      {icon:'📅', title:'1 mês de diário', pts:10, c:['#7fb8ec','#3a7ab8'], unlocked: daysActive>=30},
+      {icon:'🍻', title:'10 cervejas', pts:10, c:['#ffc670','#dd8a28'], unlocked: count>=10},
+      {icon:'🌍', title:'10 países', pts:20, c:['#6fd4c0','#2a8f7d'], unlocked: distinctCountries>=10},
+      {icon:'🏷️', title:'5 estilos', pts:20, c:['#b89ce8','#7c56c9'], unlocked: distinctStyles>=5},
+      {icon:'🏭', title:'10 cervejarias', pts:30, c:['#f0c860','#c2871f'], unlocked: distinctBreweries>=10},
+      {icon:'📅', title:'3 meses de diário', pts:30, c:['#7fb8ec','#3a7ab8'], unlocked: daysActive>=90},
+      {icon:'🏷️', title:'10 estilos', pts:40, c:['#b89ce8','#7c56c9'], unlocked: distinctStyles>=10},
+      {icon:'🌍', title:'20 países', pts:40, c:['#6fd4c0','#2a8f7d'], unlocked: distinctCountries>=20},
+      {icon:'🍻', title:'50 cervejas', pts:50, c:['#ffc670','#dd8a28'], unlocked: count>=50},
+      {icon:'🌍', title:'África', pts:50, c:['#6fd4c0','#2a8f7d'], unlocked: continentsVisited.has('África')},
+      {icon:'🌏', title:'Ásia', pts:50, c:['#6fd4c0','#2a8f7d'], unlocked: continentsVisited.has('Ásia')},
+      {icon:'🌏', title:'Austrália', pts:50, c:['#6fd4c0','#2a8f7d'], unlocked: continentsVisited.has('Austrália')},
+      {icon:'🌍', title:'Europa', pts:50, c:['#6fd4c0','#2a8f7d'], unlocked: continentsVisited.has('Europa')},
+      {icon:'🌎', title:'América do Norte', pts:50, c:['#6fd4c0','#2a8f7d'], unlocked: continentsVisited.has('América do Norte')},
+      {icon:'🌎', title:'América do Sul', pts:50, c:['#6fd4c0','#2a8f7d'], unlocked: continentsVisited.has('América do Sul')},
+      {icon:'⭐', title:'A melhor cerveja', pts:50, c:['#ffe17a','#e0a83e'], unlocked: hasFive},
+      {icon:'💔', title:'A pior cerveja', pts:50, c:['#f08a80','#c0403d'], unlocked: hasLow},
+      {icon:'🏭', title:'20 cervejarias', pts:60, c:['#f0c860','#c2871f'], unlocked: distinctBreweries>=20},
+      {icon:'📅', title:'6 meses de diário', pts:60, c:['#7fb8ec','#3a7ab8'], unlocked: daysActive>=180},
+      {icon:'🏷️', title:'20 estilos', pts:80, c:['#b89ce8','#7c56c9'], unlocked: distinctStyles>=20},
+      {icon:'💯', title:'100 cervejas', pts:100, c:['#ffc670','#dd8a28'], unlocked: count>=100},
+      {icon:'🌍', title:'50 países', pts:100, c:['#6fd4c0','#2a8f7d'], unlocked: distinctCountries>=50},
+      {icon:'📅', title:'12 meses de diário', pts:120, c:['#7fb8ec','#3a7ab8'], unlocked: daysActive>=365},
+      {icon:'🏷️', title:'30 estilos', pts:120, c:['#b89ce8','#7c56c9'], unlocked: distinctStyles>=30},
+      {icon:'🏭', title:'50 cervejarias', pts:150, c:['#f0c860','#c2871f'], unlocked: distinctBreweries>=50},
+      {icon:'🏷️', title:'40 estilos', pts:160, c:['#b89ce8','#7c56c9'], unlocked: distinctStyles>=40},
+      {icon:'📅', title:'18 meses de diário', pts:180, c:['#7fb8ec','#3a7ab8'], unlocked: daysActive>=545},
+      {icon:'🌍', title:'100 países', pts:200, c:['#6fd4c0','#2a8f7d'], unlocked: distinctCountries>=100},
+      {icon:'🍻', title:'200 cervejas', pts:200, c:['#ffc670','#dd8a28'], unlocked: count>=200},
+      {icon:'🏷️', title:'50 estilos', pts:200, c:['#b89ce8','#7c56c9'], unlocked: distinctStyles>=50},
+      {icon:'📅', title:'24 meses de diário', pts:240, c:['#7fb8ec','#3a7ab8'], unlocked: daysActive>=730},
+      {icon:'🏭', title:'100 cervejarias', pts:300, c:['#f0c860','#c2871f'], unlocked: distinctBreweries>=100},
+      {icon:'🌍', title:'150 países', pts:300, c:['#6fd4c0','#2a8f7d'], unlocked: distinctCountries>=150},
+      {icon:'🏷️', title:'75 estilos', pts:300, c:['#b89ce8','#7c56c9'], unlocked: distinctStyles>=75},
+      {icon:'🌐', title:'O Mundo (todos os continentes)', pts:300, c:['#6fd4c0','#2a8f7d'], unlocked: continentsVisited.size>=6},
+      {icon:'🏷️', title:'100 estilos', pts:400, c:['#b89ce8','#7c56c9'], unlocked: distinctStyles>=100},
+      {icon:'🏭', title:'150 cervejarias', pts:450, c:['#f0c860','#c2871f'], unlocked: distinctBreweries>=150},
+      {icon:'🍻', title:'500 cervejas', pts:500, c:['#ffc670','#dd8a28'], unlocked: count>=500},
+      {icon:'🍻', title:'1000 cervejas', pts:1000, c:['#ffc670','#dd8a28'], unlocked: count>=1000},
+      {icon:'📍', title:'Bônus: 5 locais de fabricação diferentes', pts:20, c:['#c9a3e0','#8e6fc9'], unlocked: distinctPlaces>=5},
+      {icon:'🌶️', title:'Bônus: IPA turbinada (IBU 60+)', pts:20, c:['#f2a06a','#d9762e'], unlocked: hasHoppy},
+      {icon:'🌑', title:'Bônus: cerveja bem escura', pts:20, c:['#9c8a7d','#4a3d35'], unlocked: hasDark},
+      {icon:'☀️', title:'Bônus: cerveja bem clara', pts:20, c:['#fff3c4','#d9b23f'], unlocked: hasPale},
+      {icon:'🍾', title:'Bônus: garrafa grande (750ml+)', pts:15, c:['#8fd08a','#4d9b48'], unlocked: hasBigBottle},
     ];
     const totalPts = achievements.filter(a=>a.unlocked).reduce((s,a)=>s+a.pts,0);
     const maxPts = achievements.reduce((s,a)=>s+a.pts,0);
@@ -1303,7 +1326,8 @@
     document.getElementById('achBannerNum').textContent = totalPts;
     document.getElementById('achBannerFrac').textContent = `de ${maxPts} possíveis (${pct}%)`;
     document.getElementById('achGrid').innerHTML = achievements.map(a=>`
-      <div class="ach-item ${a.unlocked?'unlocked':''}"><div class="ach-badge">${a.icon}</div><div class="ach-title">${a.title}</div><div class="ach-pts">${a.pts} pts</div></div>`).join('');
+      <div class="ach-item ${a.unlocked?'unlocked':''}"><div class="ach-badge" style="background:linear-gradient(150deg,${a.c[0]},${a.c[1]});">${a.icon}</div><div class="ach-title">${a.title}</div><div class="ach-pts">${a.pts} pts</div></div>`).join('');
+    achPanel.scrollTop = 0;
     achPanel.classList.add('open');
   }
 
