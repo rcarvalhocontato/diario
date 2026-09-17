@@ -566,7 +566,7 @@
           <div class="card-bottom">${starsRow(b.rating,17)}${b.location ? `<span class="card-flag">${flagEmoji(countryCode(b.location))}</span>` : ''}</div>
         </div>
       </div>`).join('');
-    grid.querySelectorAll('.card').forEach(c=>c.addEventListener('click', ()=>openDetail(c.dataset.id)));
+    grid.querySelectorAll('.card').forEach(c=>c.addEventListener('click', ()=>{ closeAllPanels(); openDetail(c.dataset.id); }));
   }
   searchInput.addEventListener('input', render);
 
@@ -582,7 +582,21 @@
   const searchRow = document.getElementById('searchRow');
   document.getElementById('btnSearchToggle').addEventListener('click', ()=>{ searchRow.classList.toggle('open'); if(searchRow.classList.contains('open')) searchInput.focus(); });
 
-  function closeAllPanels(){ document.querySelectorAll('.panel').forEach(p=>p.classList.remove('open')); }
+  let panelStack = [];
+  function closeAllPanels(){ document.querySelectorAll('.panel').forEach(p=>p.classList.remove('open')); panelStack = []; }
+  function pushPanel(panelEl){
+    const current = document.querySelector('.panel.open');
+    if(current && current!==panelEl) panelStack.push(current);
+    document.querySelectorAll('.panel').forEach(p=>{ if(p!==panelEl) p.classList.remove('open'); });
+    panelEl.scrollTop = 0;
+    panelEl.classList.add('open');
+  }
+  function goBack(){
+    const current = document.querySelector('.panel.open');
+    if(current) current.classList.remove('open');
+    const prev = panelStack.pop();
+    if(prev) prev.classList.add('open');
+  }
 
   function resizeImage(file, maxDim, quality){
     return new Promise((resolve,reject)=>{
@@ -707,20 +721,17 @@
         selectedCountry = row.dataset.c;
         document.getElementById('countryDisplay').textContent = row.textContent.trim();
         document.getElementById('countryDisplay').classList.remove('placeholder-txt');
-        countryPanel.classList.remove('open');
+        goBack();
       });
     });
   }
   document.getElementById('countryRow').addEventListener('click', ()=>{
-    closeAllPanels(); document.getElementById('countrySearch').value='';
-    renderCountryList(''); countryPanel.classList.add('open');
-    formPanel.classList.add('open'); // keep form visible underneath conceptually; re-open on back
+    document.getElementById('countrySearch').value='';
+    renderCountryList('');
+    pushPanel(countryPanel);
   });
   document.getElementById('countrySearch').addEventListener('input', e=>renderCountryList(e.target.value));
-  document.getElementById('btnCountryBack').addEventListener('click', ()=>{
-    countryPanel.classList.remove('open');
-    formPanel.classList.add('open');
-  });
+  document.getElementById('btnCountryBack').addEventListener('click', ()=>goBack());
 
   // ---- color (SRM/EBC) picker ----
   function applyColorDisplay(){
@@ -791,7 +802,6 @@
   document.getElementById('filePhoto2').addEventListener('change', async e=>{ const f=e.target.files[0]; if(!f) return; try{ photo2=await resizeImage(f,800,0.7); setPhotoSlot(2,photo2); }catch(err){ toast('Não foi possível carregar a foto.'); } });
 
   function openForm(beer){
-    closeAllPanels();
     document.getElementById('formTitle').textContent = beer ? 'Editar cerveja' : 'Nova cerveja';
     document.getElementById('beerId').value = beer ? beer.id : '';
     document.getElementById('fName').value = beer ? beer.name : '';
@@ -818,10 +828,10 @@
     currentRating = beer ? beer.rating||0 : 0;
     setPhotoSlot(1,photo1); setPhotoSlot(2,photo2);
     renderStarInputLg();
-    formPanel.classList.add('open');
+    pushPanel(formPanel);
   }
-  document.getElementById('btnAdd').addEventListener('click', ()=>openForm(null));
-  document.getElementById('btnFormBack').addEventListener('click', ()=>formPanel.classList.remove('open'));
+  document.getElementById('btnAdd').addEventListener('click', ()=>{ closeAllPanels(); openForm(null); });
+  document.getElementById('btnFormBack').addEventListener('click', ()=>goBack());
 
   async function submitForm(){
     if(!document.getElementById('fName').value.trim()){ toast('Dê um nome pra cerveja.'); return; }
@@ -841,7 +851,10 @@
     const idx = beers.findIndex(b=>b.id===id);
     if(idx>=0) beers[idx]=beer; else beers.push(beer);
     await saveBeers();
-    formPanel.classList.remove('open'); render();
+    render();
+    const wasEditingDetailBeer = (detailId === id);
+    goBack();
+    if(wasEditingDetailBeer) openDetail(id);
     toast('Cerveja salva!');
   }
   document.getElementById('btnFormSave').addEventListener('click', submitForm);
@@ -863,7 +876,6 @@
   function openDetail(id){
     detailId = id;
     const b = beers.find(x=>x.id===id); if(!b) return;
-    closeAllPanels();
     detailContent.innerHTML = `
       ${(b.photo||b.photo2) ? `<div class="detail-photos">${b.photo?`<img src="${b.photo}">`:''}${b.photo2?`<img src="${b.photo2}">`:''}</div>` : ''}
       <div class="detail-title"><h2>${escapeHtml(b.name)}</h2>${starsRow(b.rating,30)}</div>
@@ -906,17 +918,16 @@
     document.getElementById('btnDeleteBeer').addEventListener('click', async ()=>{
       if(!confirm('Excluir esta cerveja do seu diário?')) return;
       beers = beers.filter(x=>x.id!==id);
-      await saveBeers(); detailPanel.classList.remove('open'); render();
+      await saveBeers(); closeAllPanels(); render();
       toast('Cerveja excluída.');
     });
-    detailPanel.scrollTop = 0;
     detailContent.querySelectorAll('.detail-photos img').forEach(imgEl=>{
       imgEl.addEventListener('click', ()=>openLightbox(imgEl.src));
     });
-    detailPanel.classList.add('open');
+    pushPanel(detailPanel);
   }
-  document.getElementById('btnDetailBack').addEventListener('click', ()=>detailPanel.classList.remove('open'));
-  document.getElementById('btnDetailEdit').addEventListener('click', ()=>{ const b=beers.find(x=>x.id===detailId); detailPanel.classList.remove('open'); openForm(b); });
+  document.getElementById('btnDetailBack').addEventListener('click', ()=>goBack());
+  document.getElementById('btnDetailEdit').addEventListener('click', ()=>{ const b=beers.find(x=>x.id===detailId); openForm(b); });
 
   // ---- SVG chart builders (offline, clickable segments for drill-down) ----
   function lightenHex(hex, amt){
@@ -1016,7 +1027,6 @@
 
   // ---- drill-down ----
   const drillPanel = document.getElementById('drillPanel');
-  let drillReturnTo = 'stats';
   function openDrillDown(title, list){
     document.getElementById('drillTitle').textContent = `${title} (${list.length})`;
     document.getElementById('drillList').innerHTML = list.map(b=>`
@@ -1026,16 +1036,11 @@
         ${starsRow(b.rating,12)}
       </div>`).join('');
     document.getElementById('drillList').querySelectorAll('.drill-row').forEach(row=>{
-      row.addEventListener('click', ()=>{ drillPanel.classList.remove('open'); openDetail(row.dataset.id); });
+      row.addEventListener('click', ()=>{ openDetail(row.dataset.id); });
     });
-    drillPanel.scrollTop = 0;
-    drillPanel.classList.add('open');
+    pushPanel(drillPanel);
   }
-  document.getElementById('btnDrillBack').addEventListener('click', ()=>{
-    drillPanel.classList.remove('open');
-    if(drillReturnTo==='category') categoryPanel.classList.add('open');
-    else statsPanel.classList.add('open');
-  });
+  document.getElementById('btnDrillBack').addEventListener('click', ()=>goBack());
 
   function wireChartClicks(containerId, dimGet, dimLabel){
     const el = document.getElementById(containerId);
@@ -1085,12 +1090,9 @@
 
   // ---- stats panel (mirrors the original app: continuous sections, bar+legend, "MAIS" for full list) ----
   const statsPanel = document.getElementById('statsPanel');
-  document.getElementById('btnStatsBack').addEventListener('click', ()=>statsPanel.classList.remove('open'));
+  document.getElementById('btnStatsBack').addEventListener('click', ()=>goBack());
   const categoryPanel = document.getElementById('categoryPanel');
-  document.getElementById('btnCategoryBack').addEventListener('click', ()=>{
-    categoryPanel.classList.remove('open');
-    statsPanel.classList.add('open');
-  });
+  document.getElementById('btnCategoryBack').addEventListener('click', ()=>goBack());
 
   const CORE_DIMENSIONS = [
     {key:'location', label:'Países', icon:'🌍', color:'#4a90d2', get:b=>b.location, sort:'alpha', flag:true},
@@ -1149,7 +1151,7 @@
     document.getElementById('statsBannerSince').textContent = firstDate ? `desde ${formatDate(firstDate)}` : '';
     const statsList = document.getElementById('statsList');
     const statsEmpty = document.getElementById('statsEmpty');
-    if(beers.length===0){ statsList.innerHTML=''; statsEmpty.style.display='block'; statsPanel.classList.add('open'); return; }
+    if(beers.length===0){ statsList.innerHTML=''; statsEmpty.style.display='block'; pushPanel(statsPanel); return; }
     statsEmpty.style.display='none';
 
     let html = CORE_DIMENSIONS.map(statSectionHtml).join('');
@@ -1170,13 +1172,11 @@
           const dim = ALL_DIMENSIONS.find(d=>d.key===sec.dataset.dim);
           if(!dim) return;
           const matches = beers.filter(b=>{ const v=dim.get(b); return v!=null && String(v)===keyEl.dataset.key; });
-          drillReturnTo = 'stats';
           openDrillDown(`${dim.label.replace(' (bônus)','')}: ${keyEl.dataset.key}`, matches);
         }
       });
     }
-    statsPanel.scrollTop = 0;
-    statsPanel.classList.add('open');
+    pushPanel(statsPanel);
   }
 
   let categoryCtx = null; // {dim, groups, cleanLabel}
@@ -1196,8 +1196,7 @@
     sortSel.value = categorySortState[dimKey].by;
     updateSortDirBtn(dimKey);
     renderCategoryRows(dimKey);
-    categoryPanel.scrollTop = 0;
-    categoryPanel.classList.add('open');
+    pushPanel(categoryPanel);
   }
 
   function updateSortDirBtn(dimKey){
@@ -1234,7 +1233,6 @@
       row.addEventListener('click', ()=>{
         const k = row.dataset.key;
         const matches = beers.filter(b=>{ const v=dim.get(b); return v!=null && String(v)===k; });
-        drillReturnTo = 'category';
         openDrillDown(`${cleanLabel}: ${k}`, matches);
       });
     });
@@ -1254,7 +1252,7 @@
 
   // ---- achievements ----
   const achPanel = document.getElementById('achPanel');
-  document.getElementById('btnAchBack').addEventListener('click', ()=>achPanel.classList.remove('open'));
+  document.getElementById('btnAchBack').addEventListener('click', ()=>goBack());
   function daysSince(dateStr){ if(!dateStr) return 0; return Math.floor((Date.now()-new Date(dateStr).getTime())/86400000); }
   function openAchievements(){
     closeAllPanels();
@@ -1327,8 +1325,7 @@
     document.getElementById('achBannerFrac').textContent = `de ${maxPts} possíveis (${pct}%)`;
     document.getElementById('achGrid').innerHTML = achievements.map(a=>`
       <div class="ach-item ${a.unlocked?'unlocked':''}"><div class="ach-badge" style="background:linear-gradient(150deg,${a.c[0]},${a.c[1]});">${a.icon}</div><div class="ach-title">${a.title}</div><div class="ach-pts">${a.pts} pts</div></div>`).join('');
-    achPanel.scrollTop = 0;
-    achPanel.classList.add('open');
+    pushPanel(achPanel);
   }
 
   // ---- backup sheet ----
